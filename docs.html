@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-<script>window.location.replace("/worlds-documentation/");
-</script>
+  <script>
+    function rewriteUrlAndRedirect() {
+      const currentUrl = window.location.href;
 
+      let decodedUrl = decodeURIComponent(currentUrl);
+      let newUrl = decodedUrl
+        .replace(/docs\.html\#docs\//, "/docs/")
+        .replace(/\.md$/, "")
+        .replace(/\/custom-ui\//g, "/");
+
+      window.location.href = newUrl;
+    }
+
+    window.onload = rewriteUrlAndRedirect;
+  </script>
 </html>
