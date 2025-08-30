@@ -3,7 +3,10 @@
   <script>
     function rewriteUrlAndRedirect() {
       const currentUrl = window.location.href;
-
+      if (currentUrl.endsWith("/docs/") || currentUrl.endsWith("docs.html")) {
+        window.location.replace("/worlds-documentation/");
+        return;
+      }
       let decodedUrl = decodeURIComponent(currentUrl);
       let newUrl = decodedUrl
         .replace(/docs\.html\#docs\//, "/docs/")
