@@ -49,61 +49,72 @@
       <h2>Overview</h2>
       <input type="text" id="search-input" placeholder="Search documents..." />
 
-      {% assign all_docs_pages = site.pages | where_exp: "page", "page.path contains 'docs/'" %}
+   {% assign all_docs_pages = site.pages | where_exp: "page", "page.path contains 'docs/'" %}
 
       {% assign folder_list = "" | split: "" %}
+      {% assign open_folder = "" %}
       {% for doc in all_docs_pages %}
-      {% assign parts = doc.path | split: '/' %}
-      {% assign folder_name = parts[1] %}
-      {% if folder_name %}
-      {% unless folder_list contains folder_name %}
-      {% assign folder_list = folder_list | push: folder_name %}
-      {% endunless %}
-      {% endif %}
+        {% assign parts = doc.path | split: '/' %}
+        {% assign folder_name = parts[1] %}
+        {% if folder_name %}
+          {% unless folder_list contains folder_name %}
+            {% assign folder_list = folder_list | push: folder_name %}
+          {% endunless %}
+          {% if doc.url == page.url %}
+            {% assign open_folder = folder_name %}
+          {% endif %}
+        {% endif %}
       {% endfor %}
 
+      <!-- Define folder display names -->
+      {% assign folder_name_map = "asset-library-import:Asset Library Import|buildalongs:Build-Alongs|creating-a-world:Creating a World|generative-ai-tools:Generative AI Tools|getting-started-with-scripting:Getting Started with Scripting|interaction:Interaction|manuals-and-cheat-sheets:Manuals and Cheat Sheets|meshes-materials-import:Meshes Materials &amp; Import|monetization:Monetization|scripting-concepts-persistence-apis:Scripting Concepts &amp; Persistence APIs|session-recaps:Session Recaps|understanding-the-desktop-editor:Understanding the Desktop Editor" | split: "|" %}
+
       <ul id="doc-list">
-
+        <!-- Doc Section -->
+        
         {% for folder in folder_list %}
+          {% unless build_paths_folders contains folder %}
+            {% capture folder_path %}docs/{{ folder }}/{% endcapture %}
+            {% assign folder_docs = all_docs_pages | where_exp: "doc", "doc.path contains folder_path" %}
 
-        {% assign folder_docs = all_docs_pages | where_exp: "doc", "doc.path contains folder" %}
-
-        {% assign folder_is_open = false %}
-        {% for doc in folder_docs %}
-        {% if doc.url == page.url %}
-        {% assign folder_is_open = true %}
-        {% break %}
-        {% endif %}
-        {% endfor %}
-
-        <li>
-          <div class="folder-toggle{% if folder_is_open %} open{% endif %}" role="button" tabindex="0">
-            <span class="folder-name">{{ folder | replace: '-', ' ' | capitalize }}</span>
-            <svg class="chevron-icon" width="12" height="12" viewBox="0 0 320 512" fill="currentColor"
-              xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z">
-              </path>
-            </svg>
-          </div>
-          <ul class="dropdown{% if folder_is_open %} open{% endif %}">
-            {% for doc in folder_docs %}
-
-            {% assign parts = doc.path %}
-            {% assign item = parts[2] | replace: '.md', '' %}
-            {% if item %}
             <li>
-              <a href="{{ doc.url | relative_url }}" {% if doc.url==page.url %} class="active" {% endif %}>
-                {{ item }}
-                {{doc.title}}
-              </a>
+              <div class="folder-toggle{% if folder == open_folder %} open{% endif %}" role="button" tabindex="0">
+                <span class="folder-name">
+                  {% assign display_name = folder %}
+                  {% for pair in folder_name_map %}
+                    {% assign kv = pair | split: ':' %}
+                    {% if kv[0] == folder %}
+                      {% assign display_name = kv[1] %}
+                      {% break %}
+                    {% endif %}
+                  {% endfor %}
+                  {% unless display_name contains ':' %}
+                    {{ display_name }}
+                  {% else %}
+                    {{ folder | replace: '-', ' ' | capitalize }}
+                  {% endunless %}
+                </span>
+                <svg class="chevron-icon" width="12" height="12" viewBox="0 0 320 512" fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z">
+                  </path>
+                </svg>
+              </div>
+              <ul class="dropdown{% if folder == open_folder %} open{% endif %}">
+                {% for doc in folder_docs %}
+                  <li>
+                    <a href="{{ doc.url | relative_url }}" {% if doc.url == page.url %}class="active"{% endif %}>
+                      {{ doc.title }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
             </li>
-            {% endif %}
-            {% endfor %}
-          </ul>
-        </li>
+          {% endunless %}
         {% endfor %}
-      </ul>
+
+        
       <hr class="mobile-sidebar-divider mobile-only" />
       <div class="mobile-sidebar-nav mobile-only">
         <a href="/worlds-documentation/docs/manuals-and-cheat-sheets/get-started/">Creator Docs</a>
